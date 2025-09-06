@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Upload } from 'lucide-react';
+import { File as FileIcon, Upload } from 'lucide-react';
 
 export default function Page() {
   const [question, setQuestion] = useState('');
@@ -29,6 +29,15 @@ export default function Page() {
   const [history, setHistory] = useState<
     { role: 'user' | 'assistant'; content: string }[]
   >([]);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      setUploadedFiles((prevFiles) => [...prevFiles, ...newFiles]);
+    }
+  };
 
   const handleQuestionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +47,7 @@ export default function Page() {
     setHistory(newHistory);
     setQuestion('');
     // TODO: Add call to Genkit flow
-    setAnswer('This is a placeholder answer.'); 
+    setAnswer('This is a placeholder answer.');
     setHistory(prev => [...prev, {role: 'assistant', content: 'This is a placeholder answer.'}]);
   };
 
@@ -54,16 +63,50 @@ export default function Page() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+            <div
+              className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-8 text-center"
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                if (e.dataTransfer.files) {
+                  const newFiles = Array.from(e.dataTransfer.files);
+                  setUploadedFiles((prevFiles) => [...prevFiles, ...newFiles]);
+                }
+              }}
+            >
               <Upload className="w-12 h-12 text-gray-400" />
               <p className="mt-4 text-sm text-gray-600">
                 Drag and drop your files here or
               </p>
-              <Button variant="outline" className="mt-2">
+              <Button
+                variant="outline"
+                className="mt-2"
+                onClick={() => fileInputRef.current?.click()}
+              >
                 Browse Files
               </Button>
-              <Input type="file" className="hidden" multiple />
+              <Input
+                type="file"
+                className="hidden"
+                multiple
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept=".pdf"
+              />
             </div>
+            {uploadedFiles.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <h4 className="font-medium">Uploaded Files:</h4>
+                <ul className="list-disc list-inside bg-muted p-2 rounded-md">
+                  {uploadedFiles.map((file, index) => (
+                    <li key={index} className="flex items-center text-sm">
+                      <FileIcon className="w-4 h-4 mr-2" />
+                      {file.name}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </CardContent>
         </Card>
         <Card>
