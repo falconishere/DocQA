@@ -25,7 +25,6 @@ import { File as FileIcon, Upload } from 'lucide-react';
 
 export default function Page() {
   const [question, setQuestion] = useState('');
-  const [answer, setAnswer] = useState('');
   const [history, setHistory] = useState<
     { role: 'user' | 'assistant'; content: string }[]
   >([]);
@@ -43,11 +42,13 @@ export default function Page() {
     e.preventDefault();
     if (!question.trim()) return;
 
-    const newHistory = [...history, { role: 'user' as const, content: question }];
+    const newHistory = [
+      ...history,
+      { role: 'user' as const, content: question },
+    ];
     setHistory(newHistory);
     setQuestion('');
     // TODO: Add call to Genkit flow
-    setAnswer('This is a placeholder answer.');
     setHistory(prev => [...prev, {role: 'assistant', content: 'This is a placeholder answer.'}]);
   };
 
