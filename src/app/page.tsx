@@ -24,12 +24,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { File as FileIcon, Upload } from 'lucide-react';
 import { askQuestion } from './actions';
 import { documentContext } from '@/lib/document-context';
+import type { GenerateAnswerOutput } from '@/ai/flows/generate-answer-from-context';
+
+type Message = {
+  role: 'user' | 'assistant';
+  content: string | GenerateAnswerOutput;
+};
 
 export default function Page() {
   const [question, setQuestion] = useState('');
-  const [history, setHistory] = useState<
-    { role: 'user' | 'assistant'; content: string }[]
-  >([]);
+  const [history, setHistory] = useState<Message[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -44,9 +48,9 @@ export default function Page() {
     e.preventDefault();
     if (!question.trim()) return;
 
-    const newHistory = [
+    const newHistory: Message[] = [
       ...history,
-      { role: 'user' as const, content: question },
+      { role: 'user', content: question },
     ];
     setHistory(newHistory);
     setQuestion('');
@@ -165,13 +169,31 @@ export default function Page() {
                   }`}
                 >
                   <div
-                    className={`px-4 py-2 rounded-lg ${
+                    className={`px-4 py-2 rounded-lg max-w-[80%] ${
                       entry.role === 'user'
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-muted'
                     }`}
                   >
-                    {entry.content}
+                    {typeof entry.content === 'string' ? (
+                      entry.content
+                    ) : (
+                      <div>
+                        <p>{entry.content.answer}</p>
+                        <div className="mt-2 text-xs text-muted-foreground">
+                          <p>Source: {entry.content.source}</p>
+                          <p>Confidence: {(entry.content.confidence * 100).toFixed(0)}%</p>
+                          {entry.content.highlightedText && (
+                            <div className="mt-1">
+                                <p>Supporting Text:</p>
+                                <blockquote className="border-l-2 border-border pl-2 italic">
+                                    {entry.content.highlightedText}
+                                </blockquote>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

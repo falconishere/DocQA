@@ -1,9 +1,9 @@
 
 'use server';
 
-import { generateAnswer, GenerateAnswerInput } from '@/ai/flows/generate-answer-from-context';
+import { generateAnswer, GenerateAnswerInput, GenerateAnswerOutput } from '@/ai/flows/generate-answer-from-context';
 
-export async function askQuestion(input: GenerateAnswerInput) {
-    const { answer } = await generateAnswer(input);
-    return answer;
+export async function askQuestion(input: GenerateAnswerInput): Promise<GenerateAnswerOutput> {
+    const result = await generateAnswer(input);
+    return result;
 }
