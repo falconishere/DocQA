@@ -22,6 +22,8 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { File as FileIcon, Upload } from 'lucide-react';
+import { askQuestion } from './actions';
+import { documentContext } from '@/lib/document-context';
 
 export default function Page() {
   const [question, setQuestion] = useState('');
@@ -48,8 +50,9 @@ export default function Page() {
     ];
     setHistory(newHistory);
     setQuestion('');
-    // TODO: Add call to Genkit flow
-    setHistory(prev => [...prev, {role: 'assistant', content: 'This is a placeholder answer.'}]);
+    
+    const answer = await askQuestion({ question, context: documentContext });
+    setHistory(prev => [...prev, {role: 'assistant', content: answer}]);
   };
 
   return (
