@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Bot, CheckCircle2, FileText, LoaderCircle, Sparkles } from 'lucide-react';
+import { Bot, LoaderCircle, Sparkles } from 'lucide-react';
 
 import { getAnswer } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
@@ -77,29 +77,6 @@ export default function DocQAPage() {
             Ask questions about your document and get AI-powered answers instantly.
           </p>
         </header>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              Document Status
-            </CardTitle>
-            <CardDescription>
-              A document has been pre-loaded for this demonstration.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between rounded-md border bg-secondary/50 p-4">
-              <div className="flex items-center gap-3">
-                <FileText className="h-6 w-6 text-primary" />
-                <span className="font-medium text-secondary-foreground">next-js-summary.pdf</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-green-600">
-                <CheckCircle2 className="h-5 w-5" />
-                <span>Ready</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         <Card>
           <CardHeader>
