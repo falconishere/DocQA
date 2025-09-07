@@ -177,27 +177,24 @@ export default function Page() {
 
 
   const getHighlightedContent = (content: string, highlightText: string | undefined) => {
-    if (!highlightText || !content) {
+    if (!highlightText || !content.includes(highlightText)) {
       return <p className="text-sm whitespace-pre-wrap">{content}</p>;
     }
 
-    const startIndex = content.indexOf(highlightText);
-    if (startIndex === -1) {
-        return <p className="text-sm whitespace-pre-wrap">{content}</p>;
-    }
-
-    const endIndex = startIndex + highlightText.length;
-    const before = content.substring(0, startIndex);
-    const marked = content.substring(startIndex, endIndex);
-    const after = content.substring(endIndex);
+    const parts = content.split(highlightText);
 
     return (
       <p className="text-sm whitespace-pre-wrap">
-        {before}
-        <mark ref={highlightRef} className="bg-yellow-300 dark:bg-yellow-500 rounded-sm px-1 py-0.5">
-          {marked}
-        </mark>
-        {after}
+        {parts.map((part, index) => (
+          <React.Fragment key={index}>
+            {part}
+            {index < parts.length - 1 && (
+              <mark ref={highlightRef} className="bg-yellow-300 dark:bg-yellow-500 rounded-sm px-1 py-0.5">
+                {highlightText}
+              </mark>
+            )}
+          </React.Fragment>
+        ))}
       </p>
     );
   };
