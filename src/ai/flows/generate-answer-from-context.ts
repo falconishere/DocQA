@@ -47,12 +47,10 @@ You are an expert at answering questions based on the provided context.
 Answer the following question based on the provided context.
 You must provide a source reference, a confidence score, and the highlighted supporting text from the document.
 
-When retrieving supporting text from the document, always return highlights that follow this rule:
-- Start highlighting from the beginning of the sentence or paragraph that contains the relevant answer.
-- End highlighting at the end of that sentence or paragraph.
+When retrieving supporting text for the 'highlight' field, you must follow this rule:
+- The 'text' field must contain the full sentence or paragraph from the context that contains the relevant answer.
+- The 'startIndex' and 'endIndex' must correspond to the exact start and end of that full sentence or paragraph in the original context.
 - Never cut highlights mid-sentence or mid-paragraph.
-- The 'text' field must contain the full sentence or paragraph.
-- The 'startIndex' and 'endIndex' must correspond to the start and end of that full sentence or paragraph in the original context.
 
 Context:
 {{{context}}}
