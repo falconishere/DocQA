@@ -59,6 +59,7 @@ export default function Page() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [answerType, setAnswerType] = useState('Classic');
   const [domain, setDomain] = useState('General');
+  const highlightRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
@@ -144,35 +145,32 @@ export default function Page() {
 
   const lastAnswer = history.findLast(m => m.role === 'assistant')?.content as GenerateAnswerOutput | undefined;
 
-  const getHighlightedContent = (content: string, highlightedText: string) => {
-    if (!highlightedText || !content) {
+  useEffect(() => {
+    if (highlightRef.current) {
+        highlightRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [lastAnswer]);
+
+
+  const getHighlightedContent = (content: string, highlight: GenerateAnswerOutput['highlight'] | undefined) => {
+    if (!highlight || highlight.startIndex === -1 || highlight.endIndex === -1 || !content) {
       return <p className="text-sm whitespace-pre-wrap">{content}</p>;
     }
-  
-    const contentLower = content.toLowerCase();
-    const highlightLower = highlightedText.toLowerCase();
-    
-    const parts = [];
-    let lastIndex = 0;
-    let matchIndex = contentLower.indexOf(highlightLower, lastIndex);
-  
-    while (matchIndex !== -1) {
-      // Add the part before the match
-      parts.push(content.substring(lastIndex, matchIndex));
-      // Add the highlighted part
-      parts.push(
-        <mark key={lastIndex} className="bg-primary/20 rounded-sm">
-          {content.substring(matchIndex, matchIndex + highlightedText.length)}
+
+    const { startIndex, endIndex } = highlight;
+    const before = content.substring(0, startIndex);
+    const marked = content.substring(startIndex, endIndex);
+    const after = content.substring(endIndex);
+
+    return (
+      <p className="text-sm whitespace-pre-wrap">
+        {before}
+        <mark ref={highlightRef} className="bg-primary/30 rounded-sm">
+          {marked}
         </mark>
-      );
-      lastIndex = matchIndex + highlightedText.length;
-      matchIndex = contentLower.indexOf(highlightLower, lastIndex);
-    }
-  
-    // Add the remaining part of the content
-    parts.push(content.substring(lastIndex));
-  
-    return <p className="text-sm whitespace-pre-wrap">{parts}</p>;
+        {after}
+      </p>
+    );
   };
 
   return (
@@ -239,7 +237,7 @@ export default function Page() {
             <p className="text-sm text-muted-foreground">Document content</p>
           </div>
           <ScrollArea className="flex-1 p-4">
-            {getHighlightedContent(documentContent, lastAnswer?.highlightedText || '')}
+            {getHighlightedContent(documentContent, lastAnswer?.highlight)}
           </ScrollArea>
         </div>
 
@@ -274,11 +272,11 @@ export default function Page() {
                         <div className="mt-4 text-xs bg-background/50 p-2 rounded-md">
                           <p className="font-semibold mb-1">Source: {entry.content.source}</p>
                           <p className="mb-1">Confidence: {(entry.content.confidence * 100).toFixed(0)}%</p>
-                          {entry.content.highlightedText && (
+                          {entry.content.highlight?.text && (
                             <div>
                                 <p className="font-semibold">Supporting Text:</p>
                                 <blockquote className="border-l-2 border-border pl-2 italic mt-1">
-                                    {entry.content.highlightedText}
+                                    {entry.content.highlight.text}
                                 </blockquote>
                             </div>
                           )}
