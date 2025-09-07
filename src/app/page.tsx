@@ -64,7 +64,10 @@ export default function Page() {
   };
 
   useEffect(() => {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+      'pdfjs-dist/build/pdf.worker.min.mjs',
+      import.meta.url,
+    ).toString();
   }, []);
 
   const extractTextFromPdf = async (file: File) => {
@@ -279,9 +282,9 @@ export default function Page() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 grid grid-cols-1 md:grid-cols-2 h-screen">
+      <main className="flex-1 grid grid-cols-1 md:grid-cols-2 max-h-screen">
         {/* Document Viewer */}
-        <div className="flex flex-col border-r border-border">
+        <div className="flex flex-col border-r border-border max-h-screen">
           <div className="p-4 border-b border-border">
             <h2 className="text-lg font-semibold truncate">{getDocumentName()}</h2>
             <p className="text-sm text-muted-foreground">Document content</p>
@@ -298,7 +301,7 @@ export default function Page() {
         </div>
 
         {/* Q&A Chat */}
-        <div className="flex flex-col h-screen">
+        <div className="flex flex-col max-h-screen">
           <div className="p-4 border-b border-border">
             <h2 className="text-lg font-semibold truncate">{getDocumentName()}</h2>
             <p className="text-sm text-muted-foreground">Ask a question about the document.</p>
@@ -401,3 +404,5 @@ export default function Page() {
     </div>
   );
 }
+
+    
