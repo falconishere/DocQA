@@ -84,6 +84,9 @@ const generateAnswerFlow = ai.defineFlow(
     if (!output.highlight) {
       output.highlight = { text: '' };
     }
+    if (!output.highlight.text) {
+        output.highlight.text = '';
+    }
     return output;
   }
 );

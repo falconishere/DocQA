@@ -180,21 +180,24 @@ export default function Page() {
     if (!highlightText || !content.includes(highlightText)) {
       return <p className="text-sm whitespace-pre-wrap">{content}</p>;
     }
-
-    const parts = content.split(highlightText);
-
+  
+    const parts = content.split(new RegExp(`(${highlightText})`, 'g'));
+  
     return (
       <p className="text-sm whitespace-pre-wrap">
-        {parts.map((part, index) => (
-          <React.Fragment key={index}>
-            {part}
-            {index < parts.length - 1 && (
-              <mark ref={highlightRef} className="bg-yellow-300 dark:bg-yellow-500 rounded-sm px-1 py-0.5">
-                {highlightText}
-              </mark>
-            )}
-          </React.Fragment>
-        ))}
+        {parts.map((part, index) =>
+          part === highlightText ? (
+            <mark
+              key={index}
+              ref={highlightRef}
+              className="bg-yellow-300 dark:bg-yellow-500 rounded-sm px-1 py-0.5"
+            >
+              {part}
+            </mark>
+          ) : (
+            <React.Fragment key={index}>{part}</React.Fragment>
+          )
+        )}
       </p>
     );
   };
