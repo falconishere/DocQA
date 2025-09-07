@@ -72,8 +72,9 @@ Unlike generic tools (e.g., ChatPDF), **DocQA** emphasizes:
 
 ## 📸 Screenshots
 
-(DocQA/demoo.gif)
+[demo](DocQA/demoo.gif)
 
 ---
+
 
 
