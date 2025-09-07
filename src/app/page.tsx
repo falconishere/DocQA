@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { File as FileIcon, Upload, Send, FileText, FileCode, Github } from 'lucide-react';
+import { File as FileIcon, Upload, Send, FileText, FileCode, Github, Sun, Moon } from 'lucide-react';
 import { askQuestion } from './actions';
 import type { GenerateAnswerOutput } from '@/ai/flows/generate-answer-from-context';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -60,6 +60,25 @@ export default function Page() {
   const [answerType, setAnswerType] = useState('Classic');
   const [domain, setDomain] = useState('General');
   const highlightRef = useRef<HTMLElement>(null);
+  const [theme, setTheme] = useState('light');
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    setTheme(savedTheme);
+  }, []);
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(theme === 'light' ? 'dark' : 'light');
+  };
 
   useEffect(() => {
     pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
@@ -165,7 +184,7 @@ export default function Page() {
     return (
       <p className="text-sm whitespace-pre-wrap">
         {before}
-        <mark ref={highlightRef} className="bg-yellow-300 rounded-sm">
+        <mark ref={highlightRef} className="bg-yellow-300 dark:bg-yellow-500 rounded-sm">
           {marked}
         </mark>
         {after}
@@ -220,8 +239,11 @@ export default function Page() {
           </ul>
         </ScrollArea>
         
-        <div className="mt-auto">
-          <a href="#" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+        <div className="mt-auto space-y-2">
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="w-full justify-center">
+            {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+          </Button>
+          <a href="#" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground justify-center">
             <Github className="w-4 h-4" />
             View on GitHub
           </a>
@@ -269,7 +291,7 @@ export default function Page() {
                       <CardContent className="p-0">
                         <p>{entry.content.answer}</p>
                         {entry.content.source && (
-                        <div className="mt-4 text-xs bg-background/50 p-2 rounded-md">
+                        <div className="mt-4 text-xs bg-background/50 dark:bg-black/20 p-2 rounded-md">
                           <p className="font-semibold mb-1">Source: {entry.content.source}</p>
                           <p className="mb-1">Confidence: {(entry.content.confidence * 100).toFixed(0)}%</p>
                           {entry.content.highlight?.text && (
@@ -345,5 +367,3 @@ export default function Page() {
     </div>
   );
 }
-
-    
