@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
@@ -30,6 +29,12 @@ type DocumentSource = {
   url: string;
   title: string;
 }
+
+// Helper function to escape special characters for RegExp
+const escapeRegExp = (string: string) => {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
+
 
 export default function Page() {
   const [question, setQuestion] = useState('');
@@ -181,12 +186,12 @@ export default function Page() {
       return <p className="text-sm whitespace-pre-wrap">{content}</p>;
     }
   
-    const parts = content.split(new RegExp(`(${RegExp.escape(highlightText)})`, 'g'));
+    const parts = content.split(new RegExp(`(${escapeRegExp(highlightText)})`, 'i'));
   
     return (
       <p className="text-sm whitespace-pre-wrap">
         {parts.map((part, index) =>
-          part === highlightText ? (
+          part.toLowerCase() === highlightText.toLowerCase() ? (
             <mark
               key={index}
               ref={highlightRef}
@@ -419,5 +424,3 @@ export default function Page() {
     </div>
   );
 }
-
-    
