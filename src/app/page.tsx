@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -25,6 +25,7 @@ import { File as FileIcon, Upload } from 'lucide-react';
 import { askQuestion } from './actions';
 import type { GenerateAnswerOutput } from '@/ai/flows/generate-answer-from-context';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import * as pdfjsLib from 'pdfjs-dist';
 
 type Message = {
   role: 'user' | 'assistant';
@@ -38,20 +39,53 @@ export default function Page() {
   const [documentContent, setDocumentContent] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+  }, []);
+
+  const extractTextFromPdf = async (file: File) => {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+    let text = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const textContent = await page.getTextContent();
+      text += textContent.items.map((item: any) => item.str).join(' ');
+    }
+    return text;
+  };
+
+  const processFile = async (file: File) => {
+    if (file.type === 'application/pdf') {
+      const text = await extractTextFromPdf(file);
+      setDocumentContent(text);
+    } else {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setDocumentContent(event.target?.result as string);
+      };
+      reader.readAsText(file);
+    }
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
       setUploadedFiles((prevFiles) => [...prevFiles, ...newFiles]);
       
-      // For now, just read and display the first file.
-      // We will handle multi-document later.
       if (newFiles.length > 0) {
-        const file = newFiles[0];
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          setDocumentContent(event.target?.result as string);
-        };
-        reader.readAsText(file);
+        processFile(newFiles[0]);
+      }
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    if (e.dataTransfer.files) {
+      const newFiles = Array.from(e.dataTransfer.files);
+      setUploadedFiles((prevFiles) => [...prevFiles, ...newFiles]);
+       if (newFiles.length > 0) {
+        processFile(newFiles[0]);
       }
     }
   };
@@ -88,21 +122,7 @@ export default function Page() {
             <div
               className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-8 text-center"
               onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => {
-                e.preventDefault();
-                if (e.dataTransfer.files) {
-                  const newFiles = Array.from(e.dataTransfer.files);
-                  setUploadedFiles((prevFiles) => [...prevFiles, ...newFiles]);
-                   if (newFiles.length > 0) {
-                    const file = newFiles[0];
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                      setDocumentContent(event.target?.result as string);
-                    };
-                    reader.readAsText(file);
-                  }
-                }
-              }}
+              onDrop={handleDrop}
             >
               <Upload className="w-12 h-12 text-gray-400" />
               <p className="mt-4 text-sm text-gray-600">
