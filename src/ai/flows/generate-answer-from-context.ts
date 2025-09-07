@@ -48,9 +48,11 @@ Answer the following question based on the provided context.
 You must provide a source reference, a confidence score, and the highlighted supporting text from the document.
 
 When retrieving supporting text for the 'highlight' field, you must follow this rule:
-- The 'text' field must contain the full sentence or paragraph from the context that contains the relevant answer.
+- First, find the most relevant snippet that answers the question.
+- Then, expand this snippet to include the ENTIRE sentence or paragraph it belongs to.
+- The 'text' field must contain this full sentence or paragraph.
 - The 'startIndex' and 'endIndex' must correspond to the exact start and end of that full sentence or paragraph in the original context.
-- Never cut highlights mid-sentence or mid-paragraph.
+- Never return a highlight that is a fragment of a sentence.
 
 Context:
 {{{context}}}
