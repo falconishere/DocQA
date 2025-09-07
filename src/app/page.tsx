@@ -95,17 +95,23 @@ export default function Page() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
-      setUploadedFiles((prevFiles) => {
-        const updatedFiles = [...prevFiles];
-        newFiles.forEach(file => {
-          if (!updatedFiles.some(f => f.name === file.name)) {
-            updatedFiles.push(file);
+      const updatedFiles = [...uploadedFiles];
+      let fileToProcess: File | null = null;
+  
+      newFiles.forEach(file => {
+        if (!updatedFiles.some(f => f.name === file.name)) {
+          updatedFiles.push(file);
+          if (!fileToProcess) {
+            fileToProcess = file;
           }
-        });
-        return updatedFiles;
+        }
       });
       
-      if (newFiles.length > 0) {
+      setUploadedFiles(updatedFiles);
+      
+      if (fileToProcess) {
+        processFile(fileToProcess);
+      } else if (newFiles.length > 0 && !selectedFile) {
         processFile(newFiles[0]);
       }
     }
@@ -199,11 +205,18 @@ export default function Page() {
             <p className="text-sm text-muted-foreground">Document content</p>
           </div>
           <ScrollArea className="flex-1 p-4">
-            {lastAnswer && lastAnswer.highlightedText && documentContent.includes(lastAnswer.highlightedText) ? (
+            {lastAnswer?.highlightedText && documentContent ? (
               <p className="text-sm whitespace-pre-wrap">
-                {documentContent.split(lastAnswer.highlightedText)[0]}
-                <mark className="bg-primary/20 rounded-sm">{lastAnswer.highlightedText}</mark>
-                {documentContent.split(lastAnswer.highlightedText)[1]}
+                {documentContent.split(lastAnswer.highlightedText).map((part, index, array) => 
+                  index === array.length - 1 ? (
+                    part
+                  ) : (
+                    <>
+                      {part}
+                      <mark className="bg-primary/20 rounded-sm">{lastAnswer.highlightedText}</mark>
+                    </>
+                  )
+                )}
               </p>
             ) : (
               <p className="text-sm whitespace-pre-wrap">{documentContent}</p>
@@ -283,5 +296,3 @@ export default function Page() {
     </div>
   );
 }
-
-    
