@@ -54,9 +54,9 @@ README.md # Project documentation
 
 ## 👥 Team Contributions
 
-- **Abhishan Francis** – Core architecture, AI integration, retrieval pipeline.  
-- **Teammate 4** – Highlighting, auto-scroll, and debugging.  
-- **Teammate 5** – Documentation, testing, and deployment setup.  
+- [**Abhishan Francis**](https://github.com/falconishere)
+- [**Mishael Julian**](https://github.com/MishaelJulian)
+- [**Vishal V**](https://github.com/Platrixstorm)
 
 ---
 
@@ -72,6 +72,7 @@ Unlike generic tools (e.g., ChatPDF), **DocQA** emphasizes:
 
 ## 📸 Screenshots
 
-*(Add screenshots or GIFs of your app in action here for judges & GitHub visitors.)*
+
 
 ---
+
