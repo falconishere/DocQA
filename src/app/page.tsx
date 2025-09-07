@@ -44,6 +44,7 @@ export default function Page() {
   const [theme, setTheme] = useState('light');
   const [url, setUrl] = useState('');
   const [isFetchingUrl, setIsFetchingUrl] = useState(false);
+  const [isLoadingAnswer, setIsLoadingAnswer] = useState(false);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') || 'light';
@@ -155,9 +156,21 @@ export default function Page() {
     ];
     setHistory(newHistory);
     setQuestion('');
+    setIsLoadingAnswer(true);
     
-    const answer = await askQuestion({ question, context: documentContent, answerType, domain });
-    setHistory(prev => [...prev, {role: 'assistant', content: answer}]);
+    try {
+      const answer = await askQuestion({ question, context: documentContent, answerType, domain });
+      setHistory(prev => [...prev, {role: 'assistant', content: answer}]);
+    } catch (error) {
+      console.error("Error asking question:", error);
+      const errorAnswer: GenerateAnswerOutput = {
+        answer: "Sorry, I encountered an error trying to get an answer. Please try again.",
+        highlight: { text: '', startIndex: -1, endIndex: -1 },
+      };
+      setHistory(prev => [...prev, {role: 'assistant', content: errorAnswer}]);
+    } finally {
+      setIsLoadingAnswer(false);
+    }
   };
 
   const getFileIcon = (fileName: string) => {
@@ -185,7 +198,8 @@ export default function Page() {
   
     const { startIndex, endIndex } = highlight;
   
-    if (startIndex > content.length || endIndex > content.length || startIndex >= endIndex) {
+    if (startIndex < 0 || endIndex < 0 || startIndex >= endIndex || endIndex > content.length) {
+      // If indices are invalid, just return the content without highlighting
       return <p className="text-sm whitespace-pre-wrap">{content}</p>;
     }
   
@@ -221,7 +235,7 @@ export default function Page() {
         <div className="flex items-center gap-2 mb-6">
             <BotMessageSquare className="w-8 h-8 text-primary" />
             <div>
-                <h1 className="text-lg font-semibold">ContextQA</h1>
+                <h1 className="text-lg font-semibold">DocQA Lite</h1>
                 <p className="text-xs text-muted-foreground">Ask questions to your documents</p>
             </div>
         </div>
@@ -347,18 +361,14 @@ export default function Page() {
                     ) : (
                       <CardContent className="p-0">
                         <p>{entry.content.answer}</p>
-                        {entry.content.source && (
+                        {entry.content.highlight?.text && (
                         <div className="mt-4 text-xs bg-background/50 dark:bg-black/20 p-2 rounded-md">
-                          <p className="font-semibold mb-1">Source: {entry.content.source}</p>
-                          <p className="mb-1">Confidence: {(entry.content.confidence * 100).toFixed(0)}%</p>
-                          {entry.content.highlight?.text && (
-                            <div>
-                                <p className="font-semibold">Supporting Text:</p>
-                                <blockquote className="border-l-2 border-border pl-2 italic mt-1">
-                                    {entry.content.highlight.text}
-                                </blockquote>
-                            </div>
-                          )}
+                          <div>
+                              <p className="font-semibold">Supporting Text:</p>
+                              <blockquote className="border-l-2 border-border pl-2 italic mt-1">
+                                  {entry.content.highlight.text}
+                              </blockquote>
+                          </div>
                         </div>
                         )}
                       </CardContent>
@@ -366,6 +376,16 @@ export default function Page() {
                   </Card>
               </div>
             ))}
+             {isLoadingAnswer && (
+                <div className="flex justify-start">
+                    <Card className="max-w-[80%] p-3 bg-muted">
+                        <div className="flex items-center gap-2">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span>Thinking...</span>
+                        </div>
+                    </Card>
+                </div>
+            )}
             </div>
           </ScrollArea>
           <div className="p-4 border-t border-border bg-background">
@@ -413,8 +433,9 @@ export default function Page() {
                         handleQuestionSubmit(e);
                     }
                 }}
+                disabled={isLoadingAnswer}
               />
-              <Button type="submit" size="icon" className="absolute bottom-2.5 right-2.5 w-8 h-8">
+              <Button type="submit" size="icon" className="absolute bottom-2.5 right-2.5 w-8 h-8" disabled={isLoadingAnswer}>
                 <Send className="w-4 h-4" />
               </Button>
             </form>
