@@ -303,6 +303,8 @@ export default function Page() {
                     <SelectItem value="Brief">Brief</SelectItem>
                     <SelectItem value="Classic">Classic</SelectItem>
                     <SelectItem value="Educational">Educational</SelectItem>
+                    <SelectItem value="Technical">Technical</SelectItem>
+                    <SelectItem value="Creative">Creative</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -315,6 +317,9 @@ export default function Page() {
                   <SelectContent>
                     <SelectItem value="General">General</SelectItem>
                     <SelectItem value="Education">Education</SelectItem>
+                    <SelectItem value="Job">Job</SelectItem>
+                    <SelectItem value="Law">Law</SelectItem>
+                    <SelectItem value="Research">Research</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
