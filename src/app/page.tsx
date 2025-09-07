@@ -165,7 +165,7 @@ export default function Page() {
     return (
       <p className="text-sm whitespace-pre-wrap">
         {before}
-        <mark ref={highlightRef} className="bg-primary/30 rounded-sm">
+        <mark ref={highlightRef} className="bg-yellow-300 rounded-sm">
           {marked}
         </mark>
         {after}
@@ -345,3 +345,5 @@ export default function Page() {
     </div>
   );
 }
+
+    
