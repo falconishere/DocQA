@@ -25,7 +25,9 @@ const GenerateAnswerOutputSchema = z.object({
     confidence: z.number().describe('A confidence score between 0 and 1 on how sure the model is.'),
     highlight: z.object({
         text: z.string().describe('The specific text from the context that supports the answer. This should be the full sentence or paragraph.'),
-    }).describe('The supporting text snippet from the context.')
+        startIndex: z.number().describe('The starting character index of the highlight text within the original context.'),
+        endIndex: z.number().describe('The ending character index of the highlight text within the original context.'),
+    }).describe('The supporting text snippet from the context, including its exact location.')
 });
 export type GenerateAnswerOutput = z.infer<typeof GenerateAnswerOutputSchema>;
 
@@ -45,18 +47,19 @@ You are an expert at answering questions based on the provided context.
 Answer the following question based on the provided context.
 You must provide a source reference, a confidence score, and the highlighted supporting text from the document.
 
-When retrieving supporting text for the 'highlight' field, you must follow this rule:
-- First, find the most relevant snippet that directly answers the question.
-- Then, expand this snippet to include the ENTIRE sentence or paragraph it belongs to.
-- The 'text' field must contain this full sentence or paragraph.
-- Never return a highlight that is a fragment of a sentence.
+When identifying the supporting text for the 'highlight' object, you MUST follow these rules:
+1. Find the most relevant snippet in the context that directly answers the question.
+2. Expand this snippet to include the ENTIRE sentence or paragraph it belongs to. The 'text' field must contain this full, unabbreviated sentence or paragraph.
+3. Determine the exact starting and ending character indices of this full sentence/paragraph within the original context.
+4. Populate 'startIndex' and 'endIndex' with these character positions. The indices must be accurate. For example, if the context is "Hello world" and the highlight is "world", the startIndex is 6 and endIndex is 11.
+5. Never return a highlight that is a fragment of a sentence.
 
 Context:
 {{{context}}}
 {{else}}
 You should be conversational and helpful.
 If the user asks a question, and you don't have any context, you should tell them you need a document to be uploaded to answer questions about it.
-If they are just having a general conversation, you should respond conversationally. In this case, you can make up a source, set confidence to 0, and have an empty highlight object with empty text.
+If they are just having a general conversation, you should respond conversationally. In this case, you can make up a source, set confidence to 0, and have an empty highlight object with empty text and indices set to -1.
 {{/if}}
 
 Question:
@@ -77,15 +80,16 @@ const generateAnswerFlow = ai.defineFlow(
         answer: 'I apologize, but I was unable to generate a response. Please try again.',
         source: '',
         confidence: 0,
-        highlight: { text: '' },
+        highlight: { text: '', startIndex: -1, endIndex: -1 },
       };
     }
-    // Ensure highlight object and its text property exist to prevent frontend errors.
+    // Ensure highlight object and its properties exist to prevent frontend errors.
     if (!output.highlight) {
-      output.highlight = { text: '' };
+      output.highlight = { text: '', startIndex: -1, endIndex: -1 };
     }
-    if (!output.highlight.text) {
-        output.highlight.text = '';
+    if (output.highlight.startIndex === undefined || output.highlight.endIndex === undefined) {
+      output.highlight.startIndex = -1;
+      output.highlight.endIndex = -1;
     }
     return output;
   }

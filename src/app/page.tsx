@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
@@ -29,12 +30,6 @@ type DocumentSource = {
   url: string;
   title: string;
 }
-
-// Helper function to escape special characters for RegExp
-const escapeRegExp = (string: string) => {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-};
-
 
 export default function Page() {
   const [question, setQuestion] = useState('');
@@ -180,29 +175,34 @@ export default function Page() {
     }
   }, [lastAnswer]);
 
-
-  const getHighlightedContent = (content: string, highlightText: string | undefined) => {
-    if (!highlightText || !content.includes(highlightText)) {
+  const getHighlightedContent = (
+    content: string,
+    highlight: GenerateAnswerOutput['highlight'] | undefined
+  ) => {
+    if (!highlight || highlight.startIndex === -1 || highlight.endIndex === -1 || !content) {
       return <p className="text-sm whitespace-pre-wrap">{content}</p>;
     }
   
-    const parts = content.split(new RegExp(`(${escapeRegExp(highlightText)})`, 'i'));
+    const { startIndex, endIndex } = highlight;
+  
+    if (startIndex > content.length || endIndex > content.length || startIndex >= endIndex) {
+      return <p className="text-sm whitespace-pre-wrap">{content}</p>;
+    }
+  
+    const before = content.substring(0, startIndex);
+    const highlighted = content.substring(startIndex, endIndex);
+    const after = content.substring(endIndex);
   
     return (
       <p className="text-sm whitespace-pre-wrap">
-        {parts.map((part, index) =>
-          part.toLowerCase() === highlightText.toLowerCase() ? (
-            <mark
-              key={index}
-              ref={highlightRef}
-              className="bg-yellow-300 dark:bg-yellow-500 rounded-sm px-1 py-0.5"
-            >
-              {part}
-            </mark>
-          ) : (
-            <React.Fragment key={index}>{part}</React.Fragment>
-          )
-        )}
+        {before}
+        <mark
+          ref={highlightRef}
+          className="bg-yellow-300 dark:bg-yellow-500 rounded-sm px-1 py-0.5"
+        >
+          {highlighted}
+        </mark>
+        {after}
       </p>
     );
   };
@@ -315,7 +315,7 @@ export default function Page() {
                     <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
                 </div>
             ) : (
-                getHighlightedContent(documentContent, lastAnswer?.highlight?.text)
+                getHighlightedContent(documentContent, lastAnswer?.highlight)
             )}
           </ScrollArea>
         </div>
