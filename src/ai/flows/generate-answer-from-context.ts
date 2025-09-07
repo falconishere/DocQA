@@ -24,7 +24,7 @@ const GenerateAnswerOutputSchema = z.object({
     source: z.string().describe('The source from the document, like a page or paragraph number.'),
     confidence: z.number().describe('A confidence score between 0 and 1 on how sure the model is.'),
     highlight: z.object({
-        text: z.string().describe('The specific text from the context that supports the answer.'),
+        text: z.string().describe('The specific text from the context that supports the answer. This should be the full sentence or paragraph.'),
         startIndex: z.number().describe('The starting character index of the supporting text in the context.'),
         endIndex: z.number().describe('The ending character index of the supporting text in the context.'),
     }).describe('The supporting text snippet from the context.')
@@ -45,7 +45,8 @@ Your response should be in a {{answerType}} style and tailored for the {{domain}
 {{#if context}}
 You are an expert at answering questions based on the provided context.
 Answer the following question based on the provided context.
-You must provide a source reference, a confidence score, and the highlighted supporting text from the document, including the start and end character indices of the highlight in the original context.
+You must provide a source reference, a confidence score, and the highlighted supporting text from the document.
+When providing the highlight, ensure that the 'text' field contains the full sentence or paragraph that contains the answer. The 'startIndex' and 'endIndex' must correspond to the start and end of that full sentence or paragraph in the original context.
 
 Context:
 {{{context}}}
@@ -79,3 +80,4 @@ const generateAnswerFlow = ai.defineFlow(
     return output;
   }
 );
+
