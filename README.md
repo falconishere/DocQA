@@ -75,4 +75,3 @@ Unlike generic tools (e.g., ChatPDF), **DocQA** emphasizes:
 *(Add screenshots or GIFs of your app in action here for judges & GitHub visitors.)*
 
 ---
-
