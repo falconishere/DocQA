@@ -78,6 +78,8 @@ export default function Page() {
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i);
       const textContent = await page.getTextContent();
+      // The `str` property contains the text of the item.
+      // We join items with a space. Add newlines between pages.
       text += textContent.items.map((item: any) => item.str).join(' ');
       if (i < pdf.numPages) {
         text += '\n\n';
@@ -192,33 +194,54 @@ export default function Page() {
     content: string,
     highlight: GenerateAnswerOutput['highlight'] | undefined
   ) => {
-    if (!highlight || highlight.startIndex === -1 || highlight.endIndex === -1 || !content) {
+    if (!highlight || !content || !highlight.text || highlight.startIndex === -1) {
       return <p className="text-sm whitespace-pre-wrap">{content}</p>;
     }
   
-    const { startIndex, endIndex } = highlight;
+    const { startIndex, endIndex, text } = highlight;
   
-    if (startIndex < 0 || endIndex < 0 || startIndex >= endIndex || endIndex > content.length) {
-      // If indices are invalid, just return the content without highlighting
-      return <p className="text-sm whitespace-pre-wrap">{content}</p>;
+    // Primary method: Use indices if they are valid and match the text
+    if (startIndex >= 0 && endIndex > startIndex && content.substring(startIndex, endIndex) === text) {
+      const before = content.substring(0, startIndex);
+      const highlighted = content.substring(startIndex, endIndex);
+      const after = content.substring(endIndex);
+  
+      return (
+        <p className="text-sm whitespace-pre-wrap">
+          {before}
+          <mark
+            ref={highlightRef}
+            className="bg-yellow-300 dark:bg-yellow-500 rounded-sm px-1 py-0.5"
+          >
+            {highlighted}
+          </mark>
+          {after}
+        </p>
+      );
     }
   
-    const before = content.substring(0, startIndex);
-    const highlighted = content.substring(startIndex, endIndex);
-    const after = content.substring(endIndex);
+    // Fallback method: If indices are off, find the first occurrence of the highlight text
+    const fallbackIndex = content.indexOf(text);
+    if (fallbackIndex !== -1) {
+      const before = content.substring(0, fallbackIndex);
+      const highlighted = text;
+      const after = content.substring(fallbackIndex + text.length);
+      return (
+        <p className="text-sm whitespace-pre-wrap">
+          {before}
+          <mark
+            ref={highlightRef}
+            className="bg-yellow-300 dark:bg-yellow-500 rounded-sm px-1 py-0.5"
+          >
+            {highlighted}
+          </mark>
+          {after}
+        </p>
+      );
+    }
   
-    return (
-      <p className="text-sm whitespace-pre-wrap">
-        {before}
-        <mark
-          ref={highlightRef}
-          className="bg-yellow-300 dark:bg-yellow-500 rounded-sm px-1 py-0.5"
-        >
-          {highlighted}
-        </mark>
-        {after}
-      </p>
-    );
+    // If all else fails, return the content without highlighting
+    return <p className="text-sm whitespace-pre-wrap">{content}</p>;
   };
   
   const getDocumentName = () => {

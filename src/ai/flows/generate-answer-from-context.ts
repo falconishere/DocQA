@@ -22,7 +22,7 @@ export type GenerateAnswerInput = z.infer<typeof GenerateAnswerInputSchema>;
 const GenerateAnswerOutputSchema = z.object({
     answer: z.string().describe("The generated answer, quoted or paraphrased from the document."),
     highlight: z.object({
-        text: z.string().describe('The specific text from the context that supports the answer. This should be the full sentence or paragraph.'),
+        text: z.string().describe('The specific text from the context that supports the answer. This must be an *exact* match from the context, including all original whitespace and newlines.'),
         startIndex: z.number().describe('The starting character index of the highlight text within the original context.'),
         endIndex: z.number().describe('The ending character index (exclusive) of the highlight text within the original context.'),
     }).describe('The supporting text snippet from the context, including its exact location.')
@@ -52,10 +52,10 @@ When answering, you MUST return a JSON object with this exact structure, and not
 
 RULES:
 - The "answer" must be a concise answer to the user's question, derived from the provided context.
-- The "highlight.text" must be the full sentence or paragraph from the context that contains the answer.
+- The "highlight.text" must be the full sentence or paragraph from the context that contains the answer. It must be an *EXACT* substring, including all original whitespace, newlines, and punctuation.
 - The "highlight.startIndex" and "highlight.endIndex" must point to the exact start and end character positions of the "highlight.text" within the original document context.
 - The indices must be zero-based.
-- Do not modify or reformat the context in any way before calculating the indices. Every character, including whitespace and newlines, counts.
+- Do not modify, reformat, or clean the context in any way before calculating the indices. Every character, including all whitespace and newlines, counts. Your calculation must be precise.
 - If no context is provided, you should respond conversationally. In this case, the highlight object's text should be empty and indices should be -1.
 - Do not include explanations, markdown, or any extra text outside of the JSON.
 
