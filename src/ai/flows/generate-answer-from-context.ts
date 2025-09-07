@@ -48,11 +48,12 @@ Answer the following question based on the provided context.
 You must provide a source reference, a confidence score, and the highlighted supporting text from the document.
 
 When identifying the supporting text for the 'highlight' object, you MUST follow these rules:
-1. Find the most relevant snippet in the context that directly answers the question.
-2. Expand this snippet to include the ENTIRE sentence or paragraph it belongs to. The 'text' field must contain this full, unabbreviated sentence or paragraph.
-3. Determine the exact starting and ending character indices of this full sentence/paragraph within the original context.
-4. Populate 'startIndex' and 'endIndex' with these character positions. The indices must be accurate. For example, if the context is "Hello world" and the highlight is "world", the startIndex is 6 and endIndex is 11.
-5. Never return a highlight that is a fragment of a sentence.
+1.  Find the most relevant snippet in the context that directly answers the question.
+2.  Expand this snippet to include the ENTIRE sentence or paragraph it belongs to. The 'text' field must contain this full, unabbreviated sentence or paragraph.
+3.  Accurately determine the starting and ending character indices of this full sentence/paragraph within the original context. The indices must be exact and zero-based. For example, if the context is "Hello world" and the highlight is "world", the startIndex is 6 and the endIndex is 11.
+4.  Do not modify or reformat the context in any way before calculating the indices. Every character, including whitespace and newlines, counts.
+5.  Populate 'startIndex' and 'endIndex' with these character positions.
+6.  Never return a highlight that is a fragment of a sentence.
 
 Context:
 {{{context}}}
