@@ -176,12 +176,17 @@ export default function Page() {
   }, [lastAnswer]);
 
 
-  const getHighlightedContent = (content: string, highlight: GenerateAnswerOutput['highlight'] | undefined) => {
-    if (!highlight || highlight.startIndex === -1 || highlight.endIndex === -1 || !content) {
+  const getHighlightedContent = (content: string, highlightText: string | undefined) => {
+    if (!highlightText || !content) {
       return <p className="text-sm whitespace-pre-wrap">{content}</p>;
     }
 
-    const { startIndex, endIndex } = highlight;
+    const startIndex = content.indexOf(highlightText);
+    if (startIndex === -1) {
+        return <p className="text-sm whitespace-pre-wrap">{content}</p>;
+    }
+
+    const endIndex = startIndex + highlightText.length;
     const before = content.substring(0, startIndex);
     const marked = content.substring(startIndex, endIndex);
     const after = content.substring(endIndex);
@@ -189,7 +194,7 @@ export default function Page() {
     return (
       <p className="text-sm whitespace-pre-wrap">
         {before}
-        <mark ref={highlightRef} className="bg-yellow-300 dark:bg-yellow-500 rounded-sm">
+        <mark ref={highlightRef} className="bg-yellow-300 dark:bg-yellow-500 rounded-sm px-1 py-0.5">
           {marked}
         </mark>
         {after}
@@ -287,7 +292,6 @@ export default function Page() {
         <div className="flex flex-col border-r border-border max-h-screen">
           <div className="p-4 border-b border-border">
             <h2 className="text-lg font-semibold truncate">{getDocumentName()}</h2>
-            <p className="text-sm text-muted-foreground">Document content</p>
           </div>
           <ScrollArea className="flex-1 p-4">
             {isFetchingUrl ? (
@@ -295,7 +299,7 @@ export default function Page() {
                     <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
                 </div>
             ) : (
-                getHighlightedContent(documentContent, lastAnswer?.highlight)
+                getHighlightedContent(documentContent, lastAnswer?.highlight?.text)
             )}
           </ScrollArea>
         </div>
@@ -303,7 +307,7 @@ export default function Page() {
         {/* Q&A Chat */}
         <div className="flex flex-col max-h-screen">
           <div className="p-4 border-b border-border">
-            <h2 className="text-lg font-semibold truncate">{getDocumentName()}</h2>
+            <h2 className="text-lg font-semibold truncate">Q&A Chat</h2>
             <p className="text-sm text-muted-foreground">Ask a question about the document.</p>
           </div>
           <ScrollArea className="flex-1 p-4">
@@ -404,5 +408,3 @@ export default function Page() {
     </div>
   );
 }
-
-    

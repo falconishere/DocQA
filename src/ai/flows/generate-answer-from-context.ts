@@ -25,8 +25,6 @@ const GenerateAnswerOutputSchema = z.object({
     confidence: z.number().describe('A confidence score between 0 and 1 on how sure the model is.'),
     highlight: z.object({
         text: z.string().describe('The specific text from the context that supports the answer. This should be the full sentence or paragraph.'),
-        startIndex: z.number().describe('The starting character index of the supporting text in the context.'),
-        endIndex: z.number().describe('The ending character index of the supporting text in the context.'),
     }).describe('The supporting text snippet from the context.')
 });
 export type GenerateAnswerOutput = z.infer<typeof GenerateAnswerOutputSchema>;
@@ -48,10 +46,9 @@ Answer the following question based on the provided context.
 You must provide a source reference, a confidence score, and the highlighted supporting text from the document.
 
 When retrieving supporting text for the 'highlight' field, you must follow this rule:
-- First, find the most relevant snippet that answers the question.
+- First, find the most relevant snippet that directly answers the question.
 - Then, expand this snippet to include the ENTIRE sentence or paragraph it belongs to.
 - The 'text' field must contain this full sentence or paragraph.
-- The 'startIndex' and 'endIndex' must correspond to the exact start and end of that full sentence or paragraph in the original context.
 - Never return a highlight that is a fragment of a sentence.
 
 Context:
@@ -59,7 +56,7 @@ Context:
 {{else}}
 You should be conversational and helpful.
 If the user asks a question, and you don't have any context, you should tell them you need a document to be uploaded to answer questions about it.
-If they are just having a general conversation, you should respond conversationally. In this case, you can make up a source, set confidence to 0, and have an empty highlight object with empty text and indices set to -1.
+If they are just having a general conversation, you should respond conversationally. In this case, you can make up a source, set confidence to 0, and have an empty highlight object with empty text.
 {{/if}}
 
 Question:
@@ -75,19 +72,16 @@ const generateAnswerFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    // Ensure the output is not null and handle cases where highlight might be missing for general conversation.
     if (!output) {
-      // Instead of throwing, return a safe default response.
       return {
         answer: 'I apologize, but I was unable to generate a response. Please try again.',
         source: '',
         confidence: 0,
-        highlight: { text: '', startIndex: -1, endIndex: -1 },
+        highlight: { text: '' },
       };
     }
     if (!output.highlight) {
-      // Provide a default highlight object for conversational responses without context.
-      output.highlight = { text: '', startIndex: -1, endIndex: -1 };
+      output.highlight = { text: '' };
     }
     return output;
   }
