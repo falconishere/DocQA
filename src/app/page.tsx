@@ -25,6 +25,7 @@ import { File as FileIcon, Upload } from 'lucide-react';
 import { askQuestion } from './actions';
 import { documentContext } from '@/lib/document-context';
 import type { GenerateAnswerOutput } from '@/ai/flows/generate-answer-from-context';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type Message = {
   role: 'user' | 'assistant';
@@ -58,9 +59,11 @@ export default function Page() {
     const answer = await askQuestion({ question, context: documentContext });
     setHistory(prev => [...prev, {role: 'assistant', content: answer}]);
   };
+  
+  const lastAnswer = history.findLast(m => m.role === 'assistant')?.content as GenerateAnswerOutput | undefined;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 h-screen">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 h-screen">
       {/* Left panel */}
       <div className="col-span-1 flex flex-col gap-4">
         <Card>
@@ -152,6 +155,29 @@ export default function Page() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Middle panel */}
+      <div className="col-span-1 md:col-span-1 flex flex-col">
+        <Card className="flex-1 flex flex-col">
+            <CardHeader>
+                <CardTitle>Document Content</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 overflow-y-auto">
+                <ScrollArea className="h-full">
+                {lastAnswer && lastAnswer.highlightedText && documentContext.includes(lastAnswer.highlightedText) ? (
+                    <p>
+                    {documentContext.split(lastAnswer.highlightedText)[0]}
+                    <mark className="bg-primary/20">{lastAnswer.highlightedText}</mark>
+                    {documentContext.split(lastAnswer.highlightedText)[1]}
+                    </p>
+                ) : (
+                    <p>{documentContext}</p>
+                )}
+                </ScrollArea>
+            </CardContent>
+        </Card>
+      </div>
+
 
       {/* Right panel */}
       <div className="col-span-1 md:col-span-2 flex flex-col">
