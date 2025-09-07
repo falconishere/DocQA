@@ -23,7 +23,6 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { File as FileIcon, Upload } from 'lucide-react';
 import { askQuestion } from './actions';
-import { documentContext } from '@/lib/document-context';
 import type { GenerateAnswerOutput } from '@/ai/flows/generate-answer-from-context';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -36,12 +35,24 @@ export default function Page() {
   const [question, setQuestion] = useState('');
   const [history, setHistory] = useState<Message[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [documentContent, setDocumentContent] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
       setUploadedFiles((prevFiles) => [...prevFiles, ...newFiles]);
+      
+      // For now, just read and display the first file.
+      // We will handle multi-document later.
+      if (newFiles.length > 0) {
+        const file = newFiles[0];
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          setDocumentContent(event.target?.result as string);
+        };
+        reader.readAsText(file);
+      }
     }
   };
 
@@ -56,7 +67,7 @@ export default function Page() {
     setHistory(newHistory);
     setQuestion('');
     
-    const answer = await askQuestion({ question, context: documentContext });
+    const answer = await askQuestion({ question, context: documentContent });
     setHistory(prev => [...prev, {role: 'assistant', content: answer}]);
   };
   
@@ -70,7 +81,7 @@ export default function Page() {
           <CardHeader>
             <CardTitle>Upload Documents</CardTitle>
             <CardDescription>
-              Upload PDF files to start asking questions.
+              Upload files to start asking questions.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -82,6 +93,14 @@ export default function Page() {
                 if (e.dataTransfer.files) {
                   const newFiles = Array.from(e.dataTransfer.files);
                   setUploadedFiles((prevFiles) => [...prevFiles, ...newFiles]);
+                   if (newFiles.length > 0) {
+                    const file = newFiles[0];
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      setDocumentContent(event.target?.result as string);
+                    };
+                    reader.readAsText(file);
+                  }
                 }
               }}
             >
@@ -102,7 +121,6 @@ export default function Page() {
                 multiple
                 ref={fileInputRef}
                 onChange={handleFileChange}
-                accept=".pdf"
               />
             </div>
             {uploadedFiles.length > 0 && (
@@ -164,14 +182,14 @@ export default function Page() {
             </CardHeader>
             <CardContent className="flex-1 overflow-y-auto">
                 <ScrollArea className="h-full">
-                {lastAnswer && lastAnswer.highlightedText && documentContext.includes(lastAnswer.highlightedText) ? (
+                {lastAnswer && lastAnswer.highlightedText && documentContent.includes(lastAnswer.highlightedText) ? (
                     <p>
-                    {documentContext.split(lastAnswer.highlightedText)[0]}
+                    {documentContent.split(lastAnswer.highlightedText)[0]}
                     <mark className="bg-primary/20">{lastAnswer.highlightedText}</mark>
-                    {documentContext.split(lastAnswer.highlightedText)[1]}
+                    {documentContent.split(lastAnswer.highlightedText)[1]}
                     </p>
                 ) : (
-                    <p>{documentContext}</p>
+                    <p>{documentContent}</p>
                 )}
                 </ScrollArea>
             </CardContent>
