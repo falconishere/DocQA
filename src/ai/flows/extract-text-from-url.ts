@@ -1,5 +1,8 @@
 
+
 'use server';
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // only for local dev
+
 /**
  * @fileOverview A flow for extracting the main text content from a given URL.
  *

@@ -332,7 +332,7 @@ export default function Page() {
           <Button variant="ghost" size="icon" onClick={toggleTheme} className="w-full justify-center">
             {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
           </Button>
-          <a href="https://github.com/firebase/studio-samples/tree/main/doc-qa" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground justify-center">
+          <a href="https://github.com/falconishere/DocQA" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground justify-center">
             <Github className="w-4 h-4" />
             View on GitHub
           </a>
