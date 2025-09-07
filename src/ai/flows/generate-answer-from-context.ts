@@ -77,7 +77,13 @@ const generateAnswerFlow = ai.defineFlow(
     const {output} = await prompt(input);
     // Ensure the output is not null and handle cases where highlight might be missing for general conversation.
     if (!output) {
-      throw new Error('AI failed to generate an answer.');
+      // Instead of throwing, return a safe default response.
+      return {
+        answer: 'I apologize, but I was unable to generate a response. Please try again.',
+        source: '',
+        confidence: 0,
+        highlight: { text: '', startIndex: -1, endIndex: -1 },
+      };
     }
     if (!output.highlight) {
       // Provide a default highlight object for conversational responses without context.
