@@ -14,6 +14,8 @@ import { askQuestion } from './actions';
 import type { GenerateAnswerOutput } from '@/ai/flows/generate-answer-from-context';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import * as pdfjsLib from 'pdfjs-dist';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type Message = {
   role: 'user' | 'assistant';
@@ -55,6 +57,8 @@ export default function Page() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [documentContent, setDocumentContent] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [answerType, setAnswerType] = useState('Classic');
+  const [domain, setDomain] = useState('General');
 
   useEffect(() => {
     pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
@@ -127,7 +131,7 @@ export default function Page() {
     setHistory(newHistory);
     setQuestion('');
     
-    const answer = await askQuestion({ question, context: documentContent });
+    const answer = await askQuestion({ question, context: documentContent, answerType, domain });
     setHistory(prev => [...prev, {role: 'assistant', content: answer}]);
   };
 
@@ -288,6 +292,33 @@ export default function Page() {
             </div>
           </ScrollArea>
           <div className="p-4 border-t border-border">
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <Label htmlFor="answer-type" className="text-sm font-medium">Answering Type</Label>
+                <Select value={answerType} onValueChange={setAnswerType}>
+                  <SelectTrigger id="answer-type">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Brief">Brief</SelectItem>
+                    <SelectItem value="Classic">Classic</SelectItem>
+                    <SelectItem value="Educational">Educational</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="domain" className="text-sm font-medium">Domain</Label>
+                <Select value={domain} onValueChange={setDomain}>
+                  <SelectTrigger id="domain">
+                    <SelectValue placeholder="Select domain" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="General">General</SelectItem>
+                    <SelectItem value="Education">Education</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             <form onSubmit={handleQuestionSubmit} className="relative">
               <Textarea
                 placeholder="Ask a follow-up question..."

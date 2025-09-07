@@ -14,6 +14,8 @@ import {z} from 'genkit';
 const GenerateAnswerInputSchema = z.object({
   question: z.string().describe('The question to answer.'),
   context: z.string().describe('The context to use for answering the question.'),
+  answerType: z.string().describe('The desired style of the answer (e.g., Brief, Classic, Educational).'),
+  domain: z.string().describe('The domain of the question (e.g., General, Education).'),
 });
 export type GenerateAnswerInput = z.infer<typeof GenerateAnswerInputSchema>;
 
@@ -34,6 +36,7 @@ const prompt = ai.definePrompt({
   input: {schema: GenerateAnswerInputSchema},
   output: {schema: GenerateAnswerOutputSchema},
   prompt: `You are a friendly and helpful assistant for a document Q&A application.
+Your response should be in a {{answerType}} style and tailored for the {{domain}} domain.
 
 {{#if context}}
 You are an expert at answering questions based on the provided context.
