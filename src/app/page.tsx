@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { File as FileIcon, Upload, Send, FileText, FileCode, Github, Sun, Moon } from 'lucide-react';
+import { File as FileIcon, Upload, Send, FileText, FileCode, Github, Sun, Moon, BotMessageSquare } from 'lucide-react';
 import { askQuestion } from './actions';
 import type { GenerateAnswerOutput } from '@/ai/flows/generate-answer-from-context';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -21,34 +21,6 @@ type Message = {
   role: 'user' | 'assistant';
   content: string | GenerateAnswerOutput;
 };
-
-const BrainCircuit = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <path d="M12 5a3 3 0 1 0-5.993.129" />
-      <path d="M12 5a3 3 0 1 0 5.993.129" />
-      <path d="M15 13a3 3 0 1 0-5.993.129" />
-      <path d="M15 13a3 3 0 1 0 5.993.129" />
-      <path d="M9 13a3 3 0 1 0-5.993.129" />
-      <path d="M6.007 5.129A3 3 0 1 0 9 13" />
-      <path d="M18.007 5.129A3 3 0 1 0 15 13" />
-      <path d="M9 13a3 3 0 1 0 6 0" />
-      <path d="M14.12 3.88A3 3 0 1 0 9.88 2.12" />
-      <path d="M14.12 20.12a3 3 0 1 0-4.24 0" />
-      <path d="M19.88 9.88a3 3 0 1 0 0 4.24" />
-      <path d="M4.12 9.88a3 3 0 1 0 0 4.24" />
-    </svg>
-  );
 
 export default function Page() {
   const [question, setQuestion] = useState('');
@@ -197,7 +169,7 @@ export default function Page() {
       {/* Sidebar */}
       <aside className="w-64 flex flex-col border-r border-border p-4">
         <div className="flex items-center gap-2 mb-6">
-            <BrainCircuit className="w-8 h-8 text-primary" />
+            <BotMessageSquare className="w-8 h-8 text-primary" />
             <div>
                 <h1 className="text-lg font-semibold">ContextQA</h1>
                 <p className="text-xs text-muted-foreground">Ask questions to your documents</p>
