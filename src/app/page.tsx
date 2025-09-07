@@ -9,8 +9,8 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { File as FileIcon, Upload, Send, FileText, FileCode, Github, Sun, Moon, BotMessageSquare } from 'lucide-react';
-import { askQuestion } from './actions';
+import { File as FileIcon, Upload, Send, FileText, FileCode, Github, Sun, Moon, BotMessageSquare, Link as LinkIcon, Loader2 } from 'lucide-react';
+import { askQuestion, fetchContentFromUrl } from './actions';
 import type { GenerateAnswerOutput } from '@/ai/flows/generate-answer-from-context';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import * as pdfjsLib from 'pdfjs-dist';
@@ -22,17 +22,28 @@ type Message = {
   content: string | GenerateAnswerOutput;
 };
 
+type DocumentSource = {
+  type: 'file';
+  file: File;
+} | {
+  type: 'url';
+  url: string;
+  title: string;
+}
+
 export default function Page() {
   const [question, setQuestion] = useState('');
   const [history, setHistory] = useState<Message[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [documentSource, setDocumentSource] = useState<DocumentSource | null>(null);
   const [documentContent, setDocumentContent] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [answerType, setAnswerType] = useState('Classic');
   const [domain, setDomain] = useState('General');
   const highlightRef = useRef<HTMLElement>(null);
   const [theme, setTheme] = useState('light');
+  const [url, setUrl] = useState('');
+  const [isFetchingUrl, setIsFetchingUrl] = useState(false);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') || 'light';
@@ -85,7 +96,7 @@ export default function Page() {
       });
     }
     setDocumentContent(text);
-    setSelectedFile(file);
+    setDocumentSource({type: 'file', file});
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,6 +122,25 @@ export default function Page() {
       }
     }
   };
+
+  const handleUrlFetch = async () => {
+    if (!url.trim()) return;
+    setIsFetchingUrl(true);
+    setDocumentContent('');
+    setDocumentSource(null);
+    try {
+      const result = await fetchContentFromUrl({ url });
+      setDocumentContent(result.content);
+      setDocumentSource({ type: 'url', url, title: result.title });
+    } catch (error) {
+      console.error("Failed to fetch from URL", error);
+      setDocumentContent('Failed to load content from the URL. Please check the link and try again.');
+      setDocumentSource({ type: 'url', url, title: 'Error' });
+    } finally {
+      setIsFetchingUrl(false);
+    }
+  };
+
 
   const handleQuestionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -163,11 +193,18 @@ export default function Page() {
       </p>
     );
   };
+  
+  const getDocumentName = () => {
+    if (!documentSource) return 'Document content';
+    if (documentSource.type === 'file') return documentSource.file.name;
+    if (documentSource.type === 'url') return documentSource.title || documentSource.url;
+    return 'Document content';
+  }
 
   return (
     <div className="flex h-screen bg-background text-foreground">
       {/* Sidebar */}
-      <aside className="w-64 flex flex-col border-r border-border p-4">
+      <aside className="w-80 flex flex-col border-r border-border p-4">
         <div className="flex items-center gap-2 mb-6">
             <BotMessageSquare className="w-8 h-8 text-primary" />
             <div>
@@ -193,13 +230,32 @@ export default function Page() {
           accept=".pdf,.txt,.md,.html"
         />
 
+        <div className="flex w-full items-center gap-2 mt-2">
+            <Input 
+                type="url" 
+                placeholder="Or fetch from a URL..." 
+                className="flex-1"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                        handleUrlFetch();
+                    }
+                }}
+            />
+            <Button variant="outline" size="icon" onClick={handleUrlFetch} disabled={isFetchingUrl}>
+                {isFetchingUrl ? <Loader2 className="w-4 h-4 animate-spin" /> : <LinkIcon className="w-4 h-4" />}
+            </Button>
+        </div>
+
+
         <p className="text-sm font-medium text-muted-foreground mt-6 mb-2">Documents</p>
         <ScrollArea className="flex-1">
           <ul className="space-y-1">
             {uploadedFiles.map((file, index) => (
               <li key={index}>
                 <Button
-                  variant={selectedFile?.name === file.name ? 'secondary' : 'ghost'}
+                  variant={documentSource?.type === 'file' && documentSource.file.name === file.name ? 'secondary' : 'ghost'}
                   className="w-full justify-start text-sm truncate"
                   onClick={() => processFile(file)}
                 >
@@ -227,18 +283,24 @@ export default function Page() {
         {/* Document Viewer */}
         <div className="flex flex-col border-r border-border">
           <div className="p-4 border-b border-border">
-            <h2 className="text-lg font-semibold">{selectedFile?.name || 'Document content'}</h2>
+            <h2 className="text-lg font-semibold truncate">{getDocumentName()}</h2>
             <p className="text-sm text-muted-foreground">Document content</p>
           </div>
           <ScrollArea className="flex-1 p-4">
-            {getHighlightedContent(documentContent, lastAnswer?.highlight)}
+            {isFetchingUrl ? (
+                <div className="flex items-center justify-center h-full">
+                    <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                </div>
+            ) : (
+                getHighlightedContent(documentContent, lastAnswer?.highlight)
+            )}
           </ScrollArea>
         </div>
 
         {/* Q&A Chat */}
         <div className="flex flex-col h-screen">
           <div className="p-4 border-b border-border">
-            <h2 className="text-lg font-semibold">{selectedFile?.name || 'Ask a question'}</h2>
+            <h2 className="text-lg font-semibold truncate">{getDocumentName()}</h2>
             <p className="text-sm text-muted-foreground">Ask a question about the document.</p>
           </div>
           <ScrollArea className="flex-1 p-4">
@@ -283,7 +345,7 @@ export default function Page() {
             ))}
             </div>
           </ScrollArea>
-          <div className="p-4 border-t border-border">
+          <div className="p-4 border-t border-border bg-background">
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
                 <Label htmlFor="answer-type" className="text-sm font-medium">Answering Type</Label>
