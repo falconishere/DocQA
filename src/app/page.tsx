@@ -101,18 +101,17 @@ export default function Page() {
       newFiles.forEach(file => {
         if (!updatedFiles.some(f => f.name === file.name)) {
           updatedFiles.push(file);
-          if (!fileToProcess) {
-            fileToProcess = file;
-          }
         }
       });
       
       setUploadedFiles(updatedFiles);
+
+      if (newFiles.length > 0) {
+        fileToProcess = newFiles[0];
+      }
       
       if (fileToProcess) {
         processFile(fileToProcess);
-      } else if (newFiles.length > 0 && !selectedFile) {
-        processFile(newFiles[0]);
       }
     }
   };
@@ -140,6 +139,37 @@ export default function Page() {
   }
 
   const lastAnswer = history.findLast(m => m.role === 'assistant')?.content as GenerateAnswerOutput | undefined;
+
+  const getHighlightedContent = (content: string, highlightedText: string) => {
+    if (!highlightedText || !content) {
+      return <p className="text-sm whitespace-pre-wrap">{content}</p>;
+    }
+  
+    const contentLower = content.toLowerCase();
+    const highlightLower = highlightedText.toLowerCase();
+    
+    const parts = [];
+    let lastIndex = 0;
+    let matchIndex = contentLower.indexOf(highlightLower, lastIndex);
+  
+    while (matchIndex !== -1) {
+      // Add the part before the match
+      parts.push(content.substring(lastIndex, matchIndex));
+      // Add the highlighted part
+      parts.push(
+        <mark key={lastIndex} className="bg-primary/20 rounded-sm">
+          {content.substring(matchIndex, matchIndex + highlightedText.length)}
+        </mark>
+      );
+      lastIndex = matchIndex + highlightedText.length;
+      matchIndex = contentLower.indexOf(highlightLower, lastIndex);
+    }
+  
+    // Add the remaining part of the content
+    parts.push(content.substring(lastIndex));
+  
+    return <p className="text-sm whitespace-pre-wrap">{parts}</p>;
+  };
 
   return (
     <div className="flex h-screen bg-background text-foreground">
@@ -205,22 +235,7 @@ export default function Page() {
             <p className="text-sm text-muted-foreground">Document content</p>
           </div>
           <ScrollArea className="flex-1 p-4">
-            {lastAnswer?.highlightedText && documentContent ? (
-              <p className="text-sm whitespace-pre-wrap">
-                {documentContent.split(lastAnswer.highlightedText).map((part, index, array) => 
-                  index === array.length - 1 ? (
-                    part
-                  ) : (
-                    <>
-                      {part}
-                      <mark className="bg-primary/20 rounded-sm">{lastAnswer.highlightedText}</mark>
-                    </>
-                  )
-                )}
-              </p>
-            ) : (
-              <p className="text-sm whitespace-pre-wrap">{documentContent}</p>
-            )}
+            {getHighlightedContent(documentContent, lastAnswer?.highlightedText || '')}
           </ScrollArea>
         </div>
 
