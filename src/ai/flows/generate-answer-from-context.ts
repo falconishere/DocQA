@@ -80,10 +80,10 @@ const generateAnswerFlow = ai.defineFlow(
         highlight: { text: '' },
       };
     }
+    // Ensure highlight object and its text property exist to prevent frontend errors.
     if (!output.highlight) {
       output.highlight = { text: '' };
     }
     return output;
   }
 );
-
