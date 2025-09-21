@@ -5,6 +5,17 @@ It leverages LLMs with retrieval-based augmentation to provide **accurate, conte
 
 ---
 
+## 📸 Screenshots
+
+![demo](demoo.gif)
+
+---
+
+## ▶️Live Demo
+[Click Here](https://doc-qa-nu.vercel.app/)
+
+---
+
 ## 🚀 Features
 
 - 📄 Multi-Format Document Support – Upload PDFs, TXT, Markdown, or HTML documents.  
@@ -68,13 +79,8 @@ Unlike generic tools (e.g., ChatPDF), **DocQA** emphasizes:
 - ✅ **Customizable Depth** – Users choose between brief, detailed, or academic answers.  
 - ✅ **Professional UX** – Clean, dual-panel interface designed for real-world research.  
 
----
 
-## 📸 Screenshots
 
-![demo](demoo.gif)
-
----
 
 
 
